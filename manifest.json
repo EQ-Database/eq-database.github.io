@@ -1,0 +1,10 @@
+{
+ "name": "EuphorbiaQuest Field Database",
+ "short_name": "EQ Database",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#f5f3ec",
+ "theme_color": "#3d6838",
+ "icons": [{"src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any"}]
+}
