@@ -47,7 +47,8 @@ nav button.on{color:var(--accent);font-weight:700}
 #ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;display:none;padding:20px;align-items:center;justify-content:center}
 #ov.on{display:flex}
 #ovm{white-space:pre-line}
-.card.off{opacity:.6}.tag.hi{color:var(--danger);border-color:var(--danger)}.seen{border:1px solid var(--line);border-radius:10px;padding:8px;margin-top:8px;background:var(--surface)}.seen .row{margin-top:6px}.sl{padding:8px 0;border-top:1px solid var(--line)}.sl:first-child{border-top:0}.sl a{color:var(--accent);word-break:break-all}
+.card.off{opacity:.6}.seg{display:flex;margin:6px 0 10px}.seg button{flex:1;border-radius:0;font-size:15px;min-height:40px;padding:6px 8px}.seg button:first-child{border-radius:10px 0 0 10px}.seg button:last-child{border-radius:0 10px 10px 0;border-left:0}.seg button.on{background:var(--accent);color:var(--accent-t);border-color:var(--accent);font-weight:600}.ck{display:flex;align-items:center;gap:10px;color:var(--text);font-size:15px;margin:12px 0 0}.ck input{width:22px;height:22px;min-height:0;flex:none;margin:0}button:disabled{opacity:.55}
+.tag.hi{color:var(--danger);border-color:var(--danger)}.seen{border:1px solid var(--line);border-radius:10px;padding:8px;margin-top:8px;background:var(--surface)}.seen .row{margin-top:6px}.sl{padding:8px 0;border-top:1px solid var(--line)}.sl:first-child{border-top:0}.sl a{color:var(--accent);word-break:break-all}
 .tag{display:inline-block;font-size:11px;font-weight:700;color:var(--muted);border:1px solid var(--muted);border-radius:6px;padding:0 6px;margin-left:6px;vertical-align:1px}
 .box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:2px 14px;margin-top:14px}.dl{padding:10px 0;border-bottom:1px solid var(--line)}.dl:last-child{border-bottom:0}.dk{font-size:13px;color:var(--muted)}.dv{font-size:17px}.dv.pre{white-space:pre-wrap}
 .grp{margin-bottom:8px}.gh{width:100%;display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:18px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-height:54px;text-align:left}.gc{color:var(--muted);font-weight:600;font-size:15px;white-space:nowrap}.gb{margin:8px 0 4px 12px}
@@ -64,7 +65,7 @@ nav button.on{color:var(--accent);font-weight:700}
 <script>
 (function(){
 var DB,plants=[],lastBackup=null,tab="collection",q="",editing=null,msg="",lang="en",wishes=[],wq="",wgf="",wsort="pri",wedit=null,genera=[],gf="",fns=[],fq="",fmode="plant",fpre="",ftax=null,fedit=null,fdef={},notes=[],nq="",nedit=null,lastFull=null,pending=null,fview=null,csort="name",pview=null,vstack=[],wview=null,nview=null,dirty=0,pdirty=0,quiet=true,mprefix="EQ",sf="growing",xf="";
-var APP_VERSION="1.5.2",APP_DATE="2026-11-16";
+var APP_VERSION="1.5.3",APP_DATE="2026-11-16";
 function touch(n){if(quiet)return;dirty+=(n||1);setMeta("dirty",dirty).catch(function(){})}
 function touchP(n){if(quiet)return;pdirty+=(n||1);setMeta("pdirty",pdirty).catch(function(){})}
 var ST=["Unknown","Confirmed"];
@@ -73,8 +74,8 @@ function $(i){return document.getElementById(i)}
 function esc(s){var d=document.createElement("div");d.textContent=s==null?"":String(s);return d.innerHTML.replace(/"/g,"&quot;")}
 function opts(sel){return ST.map(function(s){return "<option value=\""+s+"\""+(s===sel?" selected":"")+">"+s+"</option>"}).join("")}
 
-function openDB(){return new Promise(function(res,rej){var r=indexedDB.open("eq-field-db",6);
- r.onupgradeneeded=function(){var d=r.result;var n=d.objectStoreNames;if(!n.contains("plants"))d.createObjectStore("plants",{keyPath:"id"});if(!n.contains("meta"))d.createObjectStore("meta",{keyPath:"k"});if(!n.contains("wishlist"))d.createObjectStore("wishlist",{keyPath:"id"});if(!n.contains("fieldnos"))d.createObjectStore("fieldnos",{keyPath:"id"});if(!n.contains("notes"))d.createObjectStore("notes",{keyPath:"id"});if(!n.contains("photos"))d.createObjectStore("photos",{keyPath:"id"});if(!n.contains("photofull"))d.createObjectStore("photofull",{keyPath:"id"})};
+function openDB(){return new Promise(function(res,rej){var r=indexedDB.open("eq-field-db",7);
+ r.onupgradeneeded=function(){var d=r.result;var n=d.objectStoreNames;if(!n.contains("plants"))d.createObjectStore("plants",{keyPath:"id"});if(!n.contains("meta"))d.createObjectStore("meta",{keyPath:"k"});if(!n.contains("wishlist"))d.createObjectStore("wishlist",{keyPath:"id"});if(!n.contains("fieldnos"))d.createObjectStore("fieldnos",{keyPath:"id"});if(!n.contains("notes"))d.createObjectStore("notes",{keyPath:"id"});if(!n.contains("photos"))d.createObjectStore("photos",{keyPath:"id"});if(!n.contains("photofull"))d.createObjectStore("photofull",{keyPath:"id"});if(!n.contains("shared"))d.createObjectStore("shared",{keyPath:"id"})};
  r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}})}
 function req(store,mode,fn){return new Promise(function(res,rej){var t=DB.transaction(store,mode),o=fn(t);t.oncomplete=function(){res(o&&o.result)};t.onerror=function(){rej(t.error)};t.onabort=function(){rej(t.error)}})}
 function getAll(){return req("plants","readonly",function(t){return t.objectStore("plants").getAll()})}
@@ -94,10 +95,10 @@ function moveWish(w){var npId="p"+Date.now().toString(36)+Math.random().toString
   var ps=t.objectStore("photos");photos.forEach(function(r){if(r.plantId===w.id)ps.put(Object.assign({},r,{plantId:npId}))});
   t.objectStore("wishlist").delete(w.id)};
  t.oncomplete=function(){res(no)};t.onerror=function(){rej(t.error)};t.onabort=function(){rej(t.error)}})}
-async function reload(){plants=await getAll();wishes=await getWishes();genera=(await getMeta("genera"))||[];fns=await getFns();notes=await getNotes();photos=await getPhotos();buildPmap();lastBackup=await getMeta("lastBackup");lastFull=await getMeta("lastFull");dirty=(await getMeta("dirty"))||0;pdirty=(await getMeta("pdirty"))||0;mprefix=(await getMeta("prefix"))||"EQ"}
+async function reload(){plants=await getAll();wishes=await getWishes();await reloadShared();genera=(await getMeta("genera"))||[];fns=await getFns();notes=await getNotes();photos=await getPhotos();buildPmap();lastBackup=await getMeta("lastBackup");lastFull=await getMeta("lastFull");dirty=(await getMeta("dirty"))||0;pdirty=(await getMeta("pdirty"))||0;mprefix=(await getMeta("prefix"))||"EQ"}
 
-var JA={"Status":"状態","Status Date (optional)":"状態の日付(任意)","Growing":"栽培中","Dead":"枯死","Given away":"譲渡","Growing only":"栽培中のみ","All statuses":"すべての状態","No filter":"絞り込みなし","Locality: unknown":"産地: 不明","Locality: confirmed":"産地: 確認済み","No locality":"産地の記入なし","No photos":"写真なし","With photos":"写真あり","No Field Number":"Field Numberなし","With Field Number":"Field Numberあり","No details yet.":"まだ詳細がありません。","Import":"取り込み","CSV Import (add plants)":"CSV取り込み(株を追加)","CSV import only adds plants. It never changes or deletes existing ones.":"CSV取り込みは、株を追加するだけです。すでにある株を書き換えたり、消したりはしません。","The first row must be column names: taxon, fieldNumber, locality, source, acquired, notes (or 学名, 産地, 入手先, 入手日, 備考). Rows whose management number already exists are skipped.":"1行目は列の名前にしてください: taxon, fieldNumber, locality, source, acquired, notes(または 学名, 産地, 入手先, 入手日, 備考)。管理番号がすでにある行は飛ばします。","With many photos, the full backup is split into several files. Save every file. To restore, import file 1 first, then the others.":"写真が多いと、完全版は複数のファイルに分かれます。すべてのファイルを保存してください。復元するときは、ファイル1を先に読み込み、続けて残りを読み込みます。","Management Number":"管理番号","Prefix for new numbers":"新しい番号の頭文字","Use 1 to 8 letters or digits for the prefix.":"頭文字は、英数字1〜8文字で入力してください。","Prefix saved.":"頭文字を保存しました。","This CSV has no data rows.":"このCSVにはデータの行がありません。","No plant-name column was found. The first row must contain a column name such as taxon or 学名.":"植物名の列が見つかりませんでした。1行目に taxon や 学名 などの列名を入れてください。","This CSV file could not be read.":"このCSVファイルを読み込めませんでした。","Add":"追加","Open":"開く","Delete this plant and its photos? Its Management Number will not be reused.\n\nTo keep the record instead, change Status to Dead or Given away.":"この植物と写真を削除しますか?管理番号は再利用されません。\n\n記録を残したい場合は、削除せずに「状態」を枯死や譲渡に変えてください。","Acquisition Date":"入手日","Related Notes":"関連するメモ","Name (A–Z)":"名前順(A→Z・五十音)","Newest first":"新しい順(管理番号)","Oldest first":"古い順(管理番号)","By Field Number":"フィールドナンバー順","In Collection":"コレクション内の株","Edit":"編集","No prefix":"種別なし","Discard unsaved changes?":"保存していない変更を破棄しますか?","Discard":"破棄","Save backup file":"バックアップファイルを保存","Saved.":"保存しました。","This file is too large to save here.":"このファイルは大きすぎて、ここでは保存できません。","Saving was cancelled.":"保存をキャンセルしました。","Please wait a moment and try again.":"少し待ってから、もう一度お試しください。","Photos":"写真","+ Add Photos":"+ 写真を追加","No photos yet.":"写真はまだありません。","Photos are saved immediately and resized to 1600px.":"写真は追加した時点で保存され、長辺1600pxに縮小されます。","Close":"閉じる","◀ Move":"◀ 前へ","Move ▶":"後ろへ ▶","Set as first":"先頭にする","Delete this photo?":"この写真を削除しますか?","JSON Export (full, with photos)":"JSON書き出し(写真込みの完全版)","JSON Export (data only, no photos)":"JSON書き出し(データのみ・写真なし)","The data-only file is small and quick for everyday backups. Make a full backup with photos at least once a month.":"データのみの書き出しは軽く、普段のバックアップ向きです。写真込みの完全版も、月に1回以上は書き出してください。","Preparing photos…":"写真を書き出し中…","Delete this plant and its photos? Its Management Number will not be reused.":"この植物と写真を削除しますか?管理番号は再利用されません。","No matching plant.":"該当する植物がありません。","Choose a plant from the suggestions, or clear the field.":"候補から植物を選ぶか、欄を空にしてください。","New Note":"メモを追加","Edit Note":"メモを編集","Title (optional)":"タイトル(任意)","Date":"日付","Related Plant (optional)":"関連する植物(任意)","Note":"メモ","No notes yet. Tap + Add.":"まだメモがありません。「+ 追加」を押してください。","Please enter a title or a note.":"タイトルかメモを入力してください。","Delete this note?":"このメモを削除しますか?","All number types":"すべてのナンバー種別","New Field Number":"フィールドナンバーを追加","Edit Field Number":"フィールドナンバーを編集","Field Number *":"フィールドナンバー *","Verification Status":"確認状況","Prefix:":"ナンバー種別:","(from number)":"(番号から自動)","+ Add Field Number":"+ フィールドナンバーを追加","By Plant":"植物別","By Prefix":"種別別","← Back":"← 戻る","No Field Numbers yet. Tap + Add.":"まだ登録がありません。「+ 追加」を押してください。","Taxon / Plant Name and Field Number are required.":"植物名とフィールドナンバーは必須です。","This Field Number is already registered.":"このフィールドナンバーはすでに登録されています。","Delete this Field Number?":"このフィールドナンバーを削除しますか?","Genus:":"属名:","(auto)":"(名前から自動)","Genus":"属名","(none)":"(未選択)","+ Add new genus":"+ 新しい属名を追加","All genera":"すべての属","New Wish":"ウィッシュを追加","Edit Wish":"ウィッシュを編集","Move to Collection":"コレクションへ移動","Move":"移動","No wishes yet. Tap + Add.":"まだ登録がありません。「+ 追加」を押してください。","Delete this wish?":"この項目を削除しますか?","Priority":"優先度","High":"高","Medium":"中","Low":"低","By priority":"優先度順","Newest added":"追加が新しい順","Oldest added":"追加が古い順","Last seen":"最近見かけた","Sightings":"見かけた記録","Sightings (where you saw it, price)":"見かけた記録(場所・価格)","+ Add Sighting":"+ 見かけた記録を追加","Remove":"削除","Delete this wish and its photos?":"この項目と写真を削除しますか?","Move this plant to Collection? It will be removed from the Wishlist. Its photos move with it.":"この植物をコレクションに移しますか?ウィッシュリストからは削除されます。写真も一緒に移ります。","Move this plant to Collection? It will be removed from the Wishlist.":"この植物をコレクションに移しますか?ウィッシュリストからは削除されます。","Could not move. Please try again.":"移動できませんでした。もう一度お試しください。","Collection":"コレクション","Wishlist":"ウィッシュリスト","Field Numbers":"フィールドナンバー","Notes":"メモ","Settings / Backup":"設定・バックアップ","+ Add":"+ 追加","Cancel":"キャンセル","Save":"保存","Delete":"削除","Restore":"復元","Delete All":"すべて削除","New Plant":"新規登録","Edit Plant":"編集","Taxon / Plant Name *":"植物名(Taxon) *","Label Name at acquisition":"入手時のラベル名","Field Number":"フィールドナンバー","Locality":"産地","Source / Provenance":"入手先・由来・出典","Acquisition Date (optional)":"入手日(任意)","Unknown":"不明","Unverified":"未確認","Reported":"報告あり","Confirmed":"確認済み","Data":"データ","Backup":"バックアップ","Danger Zone":"危険な操作","JSON Export (full backup)":"JSON書き出し(完全バックアップ)","CSV Export (plant list)":"CSV書き出し(植物一覧)","JSON Import / Restore":"JSON読み込み・復元","Delete All Data":"全データを削除","Last backup: never":"最終バックアップ: なし","This section will be built in a later step.":"この機能は後のステップで作ります。","No backup yet. Open Settings / Backup and export a JSON file.":"まだバックアップがありません。設定・バックアップからJSONを書き出してください。","No matches.":"該当なし。","No plants yet. Tap + Add.":"まだ登録がありません。「+ 追加」を押してください。","Taxon / Plant Name is required.":"植物名は必須です。","Could not save. Please try again.":"保存できませんでした。もう一度お試しください。","Data lives only in this browser on this device. Export a JSON file regularly and keep it in the Files app or iCloud Drive.":"データはこの端末のブラウザ内にだけ保存されます。JSONを定期的に書き出し、ファイルアプリやiCloud Driveに保管してください。","Backup file prepared.":"バックアップファイルを用意しました。","Saving a file is not available here.":"この環境ではファイルを保存できません。","This backup was made by a newer version and cannot be restored.":"新しい版で作られたバックアップのため復元できません。","This file could not be read as a backup.":"このファイルはバックアップとして読み込めませんでした。","All data deleted.":"全データを削除しました。","Delete this plant? Its Management Number will not be reused.":"この植物を削除しますか?管理番号は再利用されません。","Delete ALL data on this device? Export a backup first. This cannot be undone.":"この端末の全データを削除しますか?先にバックアップを書き出してください。元に戻せません。"};
-var PAT=[[/^Showing (\d+) of (\d+)$/,"$2件中 $1件を表示"],[/^(\d+) changes since the last backup \((\d+) days ago\)\.$/,"最終バックアップ($2日前)以降、$1件の変更があります。"],[/^Changes since last backup: (\d+)$/,"最終バックアップ以降の変更: $1件"],[/^Photo changes since last photo backup: (\d+)$/,"写真込みバックアップ以降の写真の変更: $1件"],[/^Save backup file \((\d+) \/ (\d+)\)$/,"バックアップファイルを保存($1 / $2)"],[/^New plants are numbered like (.+)-0001\. Existing numbers do not change\.$/,"新しい株には $1-0001 のような番号が付きます。すでにある番号は変わりません。"],[/^Version (.+) · (.+)$/,"バージョン $1 · $2"],[/^Last backup was (\d+) days ago\.$/,"最終バックアップは$1日前です。"],[/^Replace ALL current data with this backup \((\d+) plants\)\?$/,"現在の全データをこのバックアップ($1件)で置き換えますか?"],[/^Restored (\d+) plants\.$/,"$1件を復元しました。"],[/^Prefixes: (\d+) · Field Numbers: (\d+)$/,"ナンバー種別: $1種類 · Field Number: $2件"],[/^No prefix · (\d+)$/,"種別なし · $1"],[/^Field Numbers: (\d+)$/,"Field Number: $1件"],[/^All genera \((\d+)\)$/,"すべての属($1)"],[/^Could not save the file \((.+)\)\.$/,"ファイルを保存できませんでした($1)。"],[/^Preparing photos (\d+) \/ (\d+)…$/,"写真を書き出し中 $1 / $2…"],[/^Backup file prepared, but (\d+) photo\(s\) could not be read and were skipped\.$/,"バックアップファイルを用意しましたが、$1枚の写真を読み込めず、含められませんでした。"],[/^Export failed: (.+)$/,"書き出しに失敗しました: $1"],[/^Processing (\d+) \/ (\d+)…$/,"処理中 $1 / $2…"],[/^(\d+) photo\(s\) could not be read\.$/,"$1枚の写真を読み込めませんでした。"],[/^Photos: (\d+) \((.+) MB\)$/,"写真: $1枚($2 MB)"],[/^Last photo backup: never$/,"写真込みの最終バックアップ: なし"],[/^Last photo backup: (.+)$/,"写真込みの最終バックアップ: $1"],[/^Notes: (\d+)$/,"メモ: $1件"],[/^Wishlist: (\d+)$/,"ウィッシュリスト: $1件"],[/^Plants: (\d+)$/,"植物数: $1"],[/^Last backup: (.+?) \((\d+) days ago\)$/,"最終バックアップ: $1($2日前)"],[/^Management Number: assigned on save$/,"管理番号: 保存時に自動で付きます"],[/^Management Number: (.+)$/,"管理番号: $1"],[/^Storage used: (.+?) MB(?: · Persistent: (yes|not granted))?$/,function(m,a,b){return "使用容量: "+a+" MB"+(b?" · 永続保存: "+(b==="yes"?"はい":"未許可"):"")}]];
+var JA={"Status":"状態","Status Date (optional)":"状態の日付(任意)","Growing":"栽培中","Dead":"枯死","Given away":"譲渡","Growing only":"栽培中のみ","All statuses":"すべての状態","No filter":"絞り込みなし","Locality: unknown":"産地: 不明","Locality: confirmed":"産地: 確認済み","No locality":"産地の記入なし","No photos":"写真なし","With photos":"写真あり","No Field Number":"Field Numberなし","With Field Number":"Field Numberあり","No details yet.":"まだ詳細がありません。","Import":"取り込み","CSV Import (add plants)":"CSV取り込み(株を追加)","CSV import only adds plants. It never changes or deletes existing ones.":"CSV取り込みは、株を追加するだけです。すでにある株を書き換えたり、消したりはしません。","The first row must be column names: taxon, fieldNumber, locality, source, acquired, notes (or 学名, 産地, 入手先, 入手日, 備考). Rows whose management number already exists are skipped.":"1行目は列の名前にしてください: taxon, fieldNumber, locality, source, acquired, notes(または 学名, 産地, 入手先, 入手日, 備考)。管理番号がすでにある行は飛ばします。","With many photos, the full backup is split into several files. Save every file. To restore, import file 1 first, then the others.":"写真が多いと、完全版は複数のファイルに分かれます。すべてのファイルを保存してください。復元するときは、ファイル1を先に読み込み、続けて残りを読み込みます。","Management Number":"管理番号","Prefix for new numbers":"新しい番号の頭文字","Use 1 to 8 letters or digits for the prefix.":"頭文字は、英数字1〜8文字で入力してください。","Prefix saved.":"頭文字を保存しました。","This CSV has no data rows.":"このCSVにはデータの行がありません。","No plant-name column was found. The first row must contain a column name such as taxon or 学名.":"植物名の列が見つかりませんでした。1行目に taxon や 学名 などの列名を入れてください。","This CSV file could not be read.":"このCSVファイルを読み込めませんでした。","Add":"追加","Open":"開く","Delete this plant and its photos? Its Management Number will not be reused.\n\nTo keep the record instead, change Status to Dead or Given away.":"この植物と写真を削除しますか?管理番号は再利用されません。\n\n記録を残したい場合は、削除せずに「状態」を枯死や譲渡に変えてください。","Acquisition Date":"入手日","Related Notes":"関連するメモ","Name (A–Z)":"名前順(A→Z・五十音)","Newest first":"新しい順(管理番号)","Oldest first":"古い順(管理番号)","By Field Number":"フィールドナンバー順","In Collection":"コレクション内の株","Edit":"編集","No prefix":"種別なし","Discard unsaved changes?":"保存していない変更を破棄しますか?","Discard":"破棄","Save backup file":"バックアップファイルを保存","Saved.":"保存しました。","This file is too large to save here.":"このファイルは大きすぎて、ここでは保存できません。","Saving was cancelled.":"保存をキャンセルしました。","Please wait a moment and try again.":"少し待ってから、もう一度お試しください。","Photos":"写真","+ Add Photos":"+ 写真を追加","No photos yet.":"写真はまだありません。","Photos are saved immediately and resized to 1600px.":"写真は追加した時点で保存され、長辺1600pxに縮小されます。","Close":"閉じる","◀ Move":"◀ 前へ","Move ▶":"後ろへ ▶","Set as first":"先頭にする","Delete this photo?":"この写真を削除しますか?","JSON Export (full, with photos)":"JSON書き出し(写真込みの完全版)","JSON Export (data only, no photos)":"JSON書き出し(データのみ・写真なし)","The data-only file is small and quick for everyday backups. Make a full backup with photos at least once a month.":"データのみの書き出しは軽く、普段のバックアップ向きです。写真込みの完全版も、月に1回以上は書き出してください。","Preparing photos…":"写真を書き出し中…","Delete this plant and its photos? Its Management Number will not be reused.":"この植物と写真を削除しますか?管理番号は再利用されません。","No matching plant.":"該当する植物がありません。","Choose a plant from the suggestions, or clear the field.":"候補から植物を選ぶか、欄を空にしてください。","New Note":"メモを追加","Edit Note":"メモを編集","Title (optional)":"タイトル(任意)","Date":"日付","Related Plant (optional)":"関連する植物(任意)","Note":"メモ","No notes yet. Tap + Add.":"まだメモがありません。「+ 追加」を押してください。","Please enter a title or a note.":"タイトルかメモを入力してください。","Delete this note?":"このメモを削除しますか?","All number types":"すべてのナンバー種別","New Field Number":"フィールドナンバーを追加","Edit Field Number":"フィールドナンバーを編集","Field Number *":"フィールドナンバー *","Verification Status":"確認状況","Prefix:":"ナンバー種別:","(from number)":"(番号から自動)","+ Add Field Number":"+ フィールドナンバーを追加","By Plant":"植物別","By Prefix":"種別別","← Back":"← 戻る","No Field Numbers yet. Tap + Add.":"まだ登録がありません。「+ 追加」を押してください。","Taxon / Plant Name and Field Number are required.":"植物名とフィールドナンバーは必須です。","This Field Number is already registered.":"このフィールドナンバーはすでに登録されています。","Delete this Field Number?":"このフィールドナンバーを削除しますか?","Genus:":"属名:","(auto)":"(名前から自動)","Genus":"属名","(none)":"(未選択)","+ Add new genus":"+ 新しい属名を追加","All genera":"すべての属","New Wish":"ウィッシュを追加","Edit Wish":"ウィッシュを編集","Move to Collection":"コレクションへ移動","Move":"移動","No wishes yet. Tap + Add.":"まだ登録がありません。「+ 追加」を押してください。","Delete this wish?":"この項目を削除しますか?","Received on":"受信日","Plants":"植物","From":"送り主","Received list":"受け取ったリスト","In my Wishlist":"自分のリストにあり","Open a received list file":"受け取ったファイルを開く","No received lists yet.":"受け取ったリストはまだありません。","Lists that friends sent you. They are kept apart from your own Wishlist and never mix with it.":"友人から届いたリストです。自分のウィッシュリストとは別に保存され、混ざることはありません。","This file is not a shared Wishlist.":"このファイルは共有用のウィッシュリストではありません。","This is your own Wishlist file. Nothing was imported.":"これは自分で作った共有ファイルです。読み込みませんでした。","This file could not be read.":"このファイルを読み込めませんでした。","Receive":"受け取る","This list is empty.":"このリストは空です。","Delete this received list":"この受け取ったリストを削除","Delete this received list? Your own Wishlist is not affected.":"この受け取ったリストを削除しますか?自分のウィッシュリストには影響しません。","Already in my Wishlist":"自分のウィッシュリストにあります","Add to my Wishlist":"自分のウィッシュリストに追加","Only this plant is copied. Photos come too; sightings stay in the received list.":"この1件だけをコピーします。写真も一緒にコピーされます。見かけた記録は、受け取ったリストに残ります。","Share my Wishlist with a friend":"ウィッシュリストを友人と共有","Share Wishlist":"ウィッシュリストを共有","Makes a file you can send to a friend (LINE, Mail, AirDrop). Your friend opens it in EQ Database under Wishlist → Received. It never mixes with their own Wishlist.":"友人に送るファイルを作ります(LINE、メール、AirDropなど)。友人は EQ Database の「ウィッシュリスト → 受け取ったリスト」で開きます。友人のウィッシュリストと混ざることはありません。","Your name (shown to your friend) *":"あなたの名前(友人に表示されます) *","Plants to share":"共有する範囲","All plants":"すべて","High priority only":"優先度「高」のみ","High and Medium":"優先度「高」と「中」","Include notes":"メモを含める","Include sightings (seller, price, URL)":"見かけた記録(販売者・価格・URL)を含める","Include photos (up to 3 per plant, reduced)":"写真を含める(1件につき3枚まで・縮小)","Prepare file":"ファイルを準備","Send / Save file":"ファイルを送る・保存する","The file is ready.":"ファイルの準備ができました。","Please enter your name.":"名前を入力してください。","No plants to share.":"共有する植物がありません。","Could not prepare the file.":"ファイルを準備できませんでした。","The share file was sent or saved.":"共有ファイルを送信・保存しました。","Priority":"優先度","High":"高","Medium":"中","Low":"低","By priority":"優先度順","Newest added":"追加が新しい順","Oldest added":"追加が古い順","Last seen":"最近見かけた","Sightings":"見かけた記録","Sightings (where you saw it, price)":"見かけた記録(場所・価格)","+ Add Sighting":"+ 見かけた記録を追加","Remove":"削除","Delete this wish and its photos?":"この項目と写真を削除しますか?","Move this plant to Collection? It will be removed from the Wishlist. Its photos move with it.":"この植物をコレクションに移しますか?ウィッシュリストからは削除されます。写真も一緒に移ります。","Move this plant to Collection? It will be removed from the Wishlist.":"この植物をコレクションに移しますか?ウィッシュリストからは削除されます。","Could not move. Please try again.":"移動できませんでした。もう一度お試しください。","Collection":"コレクション","Wishlist":"ウィッシュリスト","Field Numbers":"フィールドナンバー","Notes":"メモ","Settings / Backup":"設定・バックアップ","+ Add":"+ 追加","Cancel":"キャンセル","Save":"保存","Delete":"削除","Restore":"復元","Delete All":"すべて削除","New Plant":"新規登録","Edit Plant":"編集","Taxon / Plant Name *":"植物名(Taxon) *","Label Name at acquisition":"入手時のラベル名","Field Number":"フィールドナンバー","Locality":"産地","Source / Provenance":"入手先・由来・出典","Acquisition Date (optional)":"入手日(任意)","Unknown":"不明","Unverified":"未確認","Reported":"報告あり","Confirmed":"確認済み","Data":"データ","Backup":"バックアップ","Danger Zone":"危険な操作","JSON Export (full backup)":"JSON書き出し(完全バックアップ)","CSV Export (plant list)":"CSV書き出し(植物一覧)","JSON Import / Restore":"JSON読み込み・復元","Delete All Data":"全データを削除","Last backup: never":"最終バックアップ: なし","This section will be built in a later step.":"この機能は後のステップで作ります。","No backup yet. Open Settings / Backup and export a JSON file.":"まだバックアップがありません。設定・バックアップからJSONを書き出してください。","No matches.":"該当なし。","No plants yet. Tap + Add.":"まだ登録がありません。「+ 追加」を押してください。","Taxon / Plant Name is required.":"植物名は必須です。","Could not save. Please try again.":"保存できませんでした。もう一度お試しください。","Data lives only in this browser on this device. Export a JSON file regularly and keep it in the Files app or iCloud Drive.":"データはこの端末のブラウザ内にだけ保存されます。JSONを定期的に書き出し、ファイルアプリやiCloud Driveに保管してください。","Backup file prepared.":"バックアップファイルを用意しました。","Saving a file is not available here.":"この環境ではファイルを保存できません。","This backup was made by a newer version and cannot be restored.":"新しい版で作られたバックアップのため復元できません。","This file could not be read as a backup.":"このファイルはバックアップとして読み込めませんでした。","All data deleted.":"全データを削除しました。","Delete this plant? Its Management Number will not be reused.":"この植物を削除しますか?管理番号は再利用されません。","Delete ALL data on this device? Export a backup first. This cannot be undone.":"この端末の全データを削除しますか?先にバックアップを書き出してください。元に戻せません。"};
+var PAT=[[/^My Wishlist \((\d+)\)$/,"自分のリスト($1)"],[/^Received \((\d+)\)$/,"受け取ったリスト($1)"],[/^Showing (\d+) of (\d+)$/,"$2件中 $1件を表示"],[/^(\d+) changes since the last backup \((\d+) days ago\)\.$/,"最終バックアップ($2日前)以降、$1件の変更があります。"],[/^Changes since last backup: (\d+)$/,"最終バックアップ以降の変更: $1件"],[/^Photo changes since last photo backup: (\d+)$/,"写真込みバックアップ以降の写真の変更: $1件"],[/^Save backup file \((\d+) \/ (\d+)\)$/,"バックアップファイルを保存($1 / $2)"],[/^New plants are numbered like (.+)-0001\. Existing numbers do not change\.$/,"新しい株には $1-0001 のような番号が付きます。すでにある番号は変わりません。"],[/^Version (.+) · (.+)$/,"バージョン $1 · $2"],[/^Last backup was (\d+) days ago\.$/,"最終バックアップは$1日前です。"],[/^Replace ALL current data with this backup \((\d+) plants\)\?$/,"現在の全データをこのバックアップ($1件)で置き換えますか?"],[/^Restored (\d+) plants\.$/,"$1件を復元しました。"],[/^Prefixes: (\d+) · Field Numbers: (\d+)$/,"ナンバー種別: $1種類 · Field Number: $2件"],[/^No prefix · (\d+)$/,"種別なし · $1"],[/^Field Numbers: (\d+)$/,"Field Number: $1件"],[/^All genera \((\d+)\)$/,"すべての属($1)"],[/^Could not save the file \((.+)\)\.$/,"ファイルを保存できませんでした($1)。"],[/^Preparing photos (\d+) \/ (\d+)…$/,"写真を書き出し中 $1 / $2…"],[/^Backup file prepared, but (\d+) photo\(s\) could not be read and were skipped\.$/,"バックアップファイルを用意しましたが、$1枚の写真を読み込めず、含められませんでした。"],[/^Export failed: (.+)$/,"書き出しに失敗しました: $1"],[/^Processing (\d+) \/ (\d+)…$/,"処理中 $1 / $2…"],[/^(\d+) photo\(s\) could not be read\.$/,"$1枚の写真を読み込めませんでした。"],[/^Photos: (\d+) \((.+) MB\)$/,"写真: $1枚($2 MB)"],[/^Last photo backup: never$/,"写真込みの最終バックアップ: なし"],[/^Last photo backup: (.+)$/,"写真込みの最終バックアップ: $1"],[/^Notes: (\d+)$/,"メモ: $1件"],[/^Wishlist: (\d+)$/,"ウィッシュリスト: $1件"],[/^Plants: (\d+)$/,"植物数: $1"],[/^Last backup: (.+?) \((\d+) days ago\)$/,"最終バックアップ: $1($2日前)"],[/^Management Number: assigned on save$/,"管理番号: 保存時に自動で付きます"],[/^Management Number: (.+)$/,"管理番号: $1"],[/^Storage used: (.+?) MB(?: · Persistent: (yes|not granted))?$/,function(m,a,b){return "使用容量: "+a+" MB"+(b?" · 永続保存: "+(b==="yes"?"はい":"未許可"):"")}]];
 var PH={"Seller / Event":"販売者・イベント","Price":"価格","URL (optional)":"URL(任意)","Management No., name or Field Number":"管理番号・植物名・Field Number","Search notes":"メモを検索","Plant, Field Number, Prefix, Locality":"植物名・Field Number・プレフィックス・産地","New genus name":"新しい属名","Search the wishlist":"ウィッシュリストを検索","Name, Genus, Field Number, Locality":"植物名・属名・Field Number・産地","Name, Number, Field Number, Locality":"植物名・管理番号・Field Number・産地","e.g. GM437":"例: GM437","Type DELETE":"DELETE と入力"};
 function tr(s){var k=s.trim();if(!k)return s;if(JA[k]!==undefined)return s.replace(k,function(){return JA[k]});for(var i=0;i<PAT.length;i++){if(PAT[i][0].test(k)){var o=k.replace(PAT[i][0],PAT[i][1]);return s.replace(k,function(){return o})}}return s}
 function applyLang(){if(lang!=="ja")return;["main","nav","ov","pv"].forEach(function(id){var root=$(id),w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),n,L=[];while((n=w.nextNode()))L.push(n);L.forEach(function(n){var p=n.parentNode;if(p.tagName==="TEXTAREA"||p.closest(".card"))return;n.nodeValue=tr(n.nodeValue)});Array.prototype.forEach.call(root.querySelectorAll("[placeholder]"),function(e){if(PH[e.placeholder])e.placeholder=PH[e.placeholder]})})}
@@ -119,8 +120,11 @@ function wishListHtml(){
  var head=wishes.length&&l.length!==wishes.length?'<div class="muted" style="margin:0 2px 6px">Showing '+l.length+" of "+wishes.length+"</div>":"";
  if(!l.length)return head+'<p class="muted">'+(wishes.length?"No matches.":"No wishes yet. Tap + Add.")+"</p>";
  return head+l.map(function(w){var pr=priOf(w),ls=seenOf(w)[0],tg=pr==="mid"?"":' <span class="tag'+(pr==="high"?" hi":"")+'">'+esc(T(priLabel(pr)))+"</span>",a=pmap[w.id],th=a&&a.length?'<img class="th" loading="lazy" src="'+thumbUrl(a[0])+'" alt="">':'<div class="th"></div>';return '<div class="card cp" data-id="'+esc(w.id)+'">'+th+'<div class="cb"><div class="tx">'+esc(w.taxon)+tg+'</div><div class="sub">'+esc([w.fieldNumber,w.locality].filter(Boolean).join(" · "))+"</div>"+(ls?'<div class="sub" style="font-size:12px">'+esc(T("Last seen")+": "+seenText(ls))+"</div>":"")+"</div></div>"}).join("")}
-function wishView(){return "<h1>Wishlist <span class='muted'>("+wishes.length+")</span></h1>"+'<div class="top"><input id="wq" type="search" placeholder="Search the wishlist" value="'+esc(wq)+'"><button class="p" id="wadd">+ Add</button></div><div class="row" style="margin-bottom:10px">'+wishGenusFilter()+sel("wsort",WSORTS,wsort)+'</div><div id="wlist">'+wishListHtml()+"</div>"}
+function wishView(){var h="<h1>Wishlist</h1>"+wishSeg();if(wtab==="recv")return h+recvHome();return h+(msg?'<div class="banner">'+esc(msg)+"</div>":"")+'<div class="top"><input id="wq" type="search" placeholder="Search the wishlist" value="'+esc(wq)+'"><button class="p" id="wadd">+ Add</button></div><div class="row" style="margin-bottom:10px">'+wishGenusFilter()+sel("wsort",WSORTS,wsort)+'</div><div id="wlist">'+wishListHtml()+"</div>"+(wishes.length?'<button id="wshare" style="width:100%;margin-top:10px">Share my Wishlist with a friend</button>':"")}
 function bindWish(){
+ document.querySelector(".seg").onclick=function(e){var b=e.target.closest("[data-wt]");if(!b)return;wtab=b.getAttribute("data-wt");msg="";render()};
+ if(wtab==="recv"){bindRecvHome();return}
+ if($("wshare"))$("wshare").onclick=function(){wshare=true;shPend=null;msg="";render();window.scrollTo(0,0)};
  $("wq").oninput=function(e){wq=e.target.value;$("wlist").innerHTML=wishListHtml();applyLang()};
  $("wgf").onchange=function(e){wgf=e.target.value;$("wlist").innerHTML=wishListHtml();applyLang()};
  $("wsort").onchange=async function(e){wsort=e.target.value;$("wlist").innerHTML=wishListHtml();applyLang();try{await setMeta("wsort",wsort)}catch(x){}};
@@ -163,6 +167,135 @@ function bindWishForm(){
   $("wmove").onclick=function(){doMoveWish(wedit)};
  }
 }
+/* ---- Wishlist sharing: send to a friend / received lists (kept apart from my wishlist) ---- */
+var shared=[],wtab="mine",wshare=false,shPend=null,rview=null,iview=null,surl={},SHMAX=3;
+function getShared(){return req("shared","readonly",function(t){return t.objectStore("shared").getAll()})}
+function putShared(r){return req("shared","readwrite",function(t){t.objectStore("shared").put(r)})}
+function delShared(id){return req("shared","readwrite",function(t){t.objectStore("shared").delete(id)})}
+async function reloadShared(){Object.keys(surl).forEach(function(k){URL.revokeObjectURL(surl[k])});surl={};shared=await getShared();shared.sort(function(a,b){return (b.received||0)-(a.received||0)})}
+function shById(id){return shared.filter(function(x){return x.id===id})[0]}
+function shItem(key){var i=String(key).lastIndexOf("~"),r=shById(String(key).slice(0,i));return r?r.items[+String(key).slice(i+1)]:null}
+function shUrl(sid,idx,pi){var k=sid+"~"+idx+"~"+pi;if(!surl[k]){var it=shById(sid).items[idx];surl[k]=URL.createObjectURL(new Blob([it.photos[pi]],{type:"image/jpeg"}))}return surl[k]}
+function wkey(t,fn){return String(t||"").trim().toLowerCase().replace(/\s+/g," ")+"|"+fnNorm(fn||"")}
+function inMine(it){var k=wkey(it.taxon,it.fieldNumber);return wishes.some(function(w){return wkey(w.taxon,w.fieldNumber)===k})}
+function shDate(t){return t?localDate(new Date(t)):""}
+function str(v,n){return String(v==null?"":v).slice(0,n||2000)}
+
+/* --- segment + received home --- */
+function wishSeg(){return '<div class="seg"><button data-wt="mine" class="'+(wtab==="mine"?"on":"")+'">My Wishlist ('+wishes.length+')</button><button data-wt="recv" class="'+(wtab==="recv"?"on":"")+'">Received ('+shared.length+")</button></div>"}
+function recvHome(){
+ return (msg?'<div class="banner">'+esc(msg)+"</div>":"")+
+ '<p class="muted">Lists that friends sent you. They are kept apart from your own Wishlist and never mix with it.</p>'+
+ '<input type="file" id="shin" accept="application/json,.json" style="display:none"><button class="p" id="shimp" style="width:100%">Open a received list file</button>'+
+ '<div id="rlist" style="margin-top:12px">'+(shared.length?shared.map(function(r){return '<div class="card" data-sid="'+esc(r.id)+'"><div class="tx" style="font-style:normal">'+esc(r.sender)+'</div><div class="sub">'+esc(T("Plants")+": "+r.items.length+" · "+T("Received on")+": "+shDate(r.received))+"</div></div>"}).join(""):'<p class="muted">No received lists yet.</p>')+"</div>"}
+function bindRecvHome(){
+ $("shimp").onclick=function(){$("shin").click()};
+ $("shin").onchange=async function(e){var f=e.target.files[0];e.target.value="";if(!f)return;var d=null;try{d=JSON.parse(await f.text())}catch(x){}
+  if(!d||d.app!=="EuphorbiaQuest Field Database"||d.kind!=="wishlist-share"){msg="This file is not a shared Wishlist.";render();return}await importShare(d)};
+ $("rlist").onclick=function(e){var c=e.target.closest("[data-sid]");if(c){msg="";pushView("r",c.getAttribute("data-sid"))}};
+}
+
+/* --- import a friend's file --- */
+async function importShare(d){
+ try{
+  var my=await getMeta("shareId");
+  if(d.shareId&&d.shareId===my){msg="This is your own Wishlist file. Nothing was imported.";render();return}
+  if(!Array.isArray(d.items)){msg="This file is not a shared Wishlist.";render();return}
+  var sender=str(d.sender,60).trim()||"?",id="s"+str(d.shareId||sender,80).replace(/[^\w-]/g,"_"),old=shById(id);
+  var q=lang==="ja"?sender+" のリスト("+d.items.length+"件)を受け取りますか?\n\n「受け取ったリスト」に保存され、自分のウィッシュリストには入りません。"+(old?"\n\nこの人から前に受け取ったリストは、新しいものに入れ替わります。":"")
+   :"Receive "+sender+"'s list ("+d.items.length+" plants)?\n\nIt is stored under Received and does not go into your own Wishlist."+(old?"\n\nThe list you received from this person before will be replaced.":"");
+  if(!(await ask(q,"Receive")))return;
+  var items=d.items.slice(0,5000).map(function(x){x=x||{};var pr=PRK[x.priority]!==undefined?x.priority:"mid",ph=[];
+   (Array.isArray(x.photos)?x.photos:[]).slice(0,SHMAX).forEach(function(u){try{ph.push(dataUrlToBuf(u))}catch(e){}});
+   var o={taxon:str(x.taxon,300),genus:str(x.genus,80),priority:pr,fieldNumber:str(x.fieldNumber,80),fieldNumberStatus:str(x.fieldNumberStatus,20),locality:str(x.locality),localityStatus:str(x.localityStatus,20),source:str(x.source),notes:str(x.notes,5000),photos:ph};
+   if(Array.isArray(x.seen))o.seen=x.seen.slice(0,100).map(function(s){s=s||{};return {d:str(s.d,20),w:str(s.w,300),p:str(s.p,100),u:str(s.u,1000)}});
+   return o}).filter(function(o){return o.taxon});
+  await putShared({id:id,sender:sender,sentAt:str(d.sentAt,40),received:Date.now(),items:items});touch();await reloadShared();
+  tab="wishlist";wtab="recv";editing=wedit=fedit=nedit=null;wshare=false;vstack=[{t:"r",id:id}];
+  msg=lang==="ja"?sender+" のリスト("+items.length+"件)を受け取りました。":"Received "+sender+"'s list ("+items.length+" plants).";render();window.scrollTo(0,0);
+ }catch(e){msg="This file could not be read.";render()}}
+
+/* --- one received list --- */
+function recvList(){var r=shById(rview),it=r.items.map(function(x,i){return [x,i]});
+ it.sort(function(a,b){return PRK[a[0].priority]-PRK[b[0].priority]||String(a[0].taxon).localeCompare(String(b[0].taxon),"ja",{numeric:true,sensitivity:"base"})});
+ return (msg?'<div class="banner">'+esc(msg)+"</div>":"")+'<div class="muted">Received list</div><h1 style="margin:2px 0">'+esc(r.sender)+'</h1><div class="muted">'+esc(T("Plants")+": "+r.items.length+" · "+T("Received on")+": "+shDate(r.received))+"</div>"+
+ '<div id="ritems" style="margin-top:12px">'+(it.length?it.map(function(p){var x=p[0],i=p[1],pr=x.priority,
+   th=x.photos&&x.photos.length?'<img class="th" loading="lazy" src="'+shUrl(r.id,i,0)+'" alt="">':'<div class="th"></div>',
+   tg=(pr==="mid"?"":' <span class="tag'+(pr==="high"?" hi":"")+'">'+esc(T(priLabel(pr)))+"</span>")+(inMine(x)?' <span class="tag">'+esc(T("In my Wishlist"))+"</span>":"");
+   return '<div class="card cp" data-i="'+i+'">'+th+'<div class="cb"><div class="tx">'+esc(x.taxon)+tg+'</div><div class="sub">'+esc([x.fieldNumber,x.locality].filter(Boolean).join(" · "))+"</div></div></div>"}).join(""):'<p class="muted">This list is empty.</p>')+"</div>"+
+ '<button class="d" id="rdel" style="width:100%;margin-top:14px">Delete this received list</button>'+VBACK}
+function bindRecvList(){
+ $("vback").onclick=popView;
+ $("ritems").onclick=function(e){var c=e.target.closest("[data-i]");if(c){msg="";pushView("i",rview+"~"+c.getAttribute("data-i"))}};
+ $("rdel").onclick=async function(){if(!(await ask("Delete this received list? Your own Wishlist is not affected.","Delete")))return;await delShared(rview);touch();await reloadShared();msg="";vstack=[];render()};
+}
+
+/* --- one received plant --- */
+function recvItem(){var k=String(iview),j=k.lastIndexOf("~"),r=shById(k.slice(0,j)),i=+k.slice(j+1),x=r.items[i],sn=Array.isArray(x.seen)?x.seen.slice().sort(function(a,b){return String(b.d||"").localeCompare(String(a.d||""))}):[];
+ return '<div class="muted">'+esc(T("From")+": "+r.sender)+'</div><h1 style="font-style:italic;font-size:24px;margin:2px 0">'+esc(x.taxon)+"</h1>"+(x.genus?'<div class="muted">'+esc(x.genus)+"</div>":"")+
+ (x.photos&&x.photos.length?'<div style="margin-top:12px">'+x.photos.map(function(b,pi){return '<img src="'+shUrl(r.id,i,pi)+'" alt="" style="width:100%;border-radius:10px;display:block;margin-bottom:8px">'}).join("")+"</div>":"")+
+ '<div class="box">'+drow("Priority",T(priLabel(x.priority)))+drow("Field Number",x.fieldNumber,x.fieldNumber?cst(x.fieldNumberStatus):"")+drow("Locality",x.locality,x.locality?cst(x.localityStatus):"","pre")+drow("Source / Provenance",x.source,"","pre")+drow("Notes",x.notes,"","pre")+"</div>"+
+ (sn.length?'<h2>Sightings</h2><div class="box">'+sn.map(function(s){return '<div class="sl"><div>'+esc(seenText(s))+"</div>"+(/^https?:\/\//i.test(s.u||"")?'<a href="'+esc(s.u)+'" target="_blank" rel="noopener">'+esc(s.u)+"</a>":"")+"</div>"}).join("")+"</div>":"")+
+ (inMine(x)?'<button id="radd" disabled style="width:100%;margin-top:14px">Already in my Wishlist</button>':'<button class="p" id="radd" style="width:100%;margin-top:14px">Add to my Wishlist</button>')+
+ '<div class="muted" style="margin-top:6px">Only this plant is copied. Photos come too; sightings stay in the received list.</div><div id="err" class="muted" style="color:var(--danger);margin-top:8px"></div>'+VBACK}
+function bindRecvItem(){
+ $("vback").onclick=popView;
+ $("radd").onclick=async function(){var b=this;if(b.disabled)return;b.disabled=true;
+  var k=String(iview),j=k.lastIndexOf("~"),r=shById(k.slice(0,j)),x=r.items[+k.slice(j+1)];
+  try{var id="w"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),from=(lang==="ja"?"受け取ったリストから: ":"From received list: ")+r.sender+" ("+shDate(r.received)+")";
+   var w={id:id,created:Date.now(),updated:Date.now(),taxon:x.taxon,genus:await addGenus(genusOf(x.taxon)||x.genus||""),priority:x.priority,fieldNumber:x.fieldNumber,fieldNumberStatus:x.fieldNumber?(x.fieldNumberStatus||"Unknown"):"",locality:x.locality,localityStatus:x.localityStatus||"Unknown",source:x.source,notes:(x.notes?x.notes+"\n\n":"")+from,seen:[]};
+   await saveWish(w);
+   for(var pi=0;pi<(x.photos||[]).length;pi++){try{var fb=x.photos[pi],L=await loadImg(new Blob([fb],{type:"image/jpeg"}));try{var t=await toJpeg(L.im,320,0.72),tb=await readBuf(t.b);
+     var rec={id:"ph"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),plantId:id,order:pi,thumb:tb,w:L.im.naturalWidth,h:L.im.naturalHeight,size:fb.byteLength+tb.byteLength,created:Date.now()};
+     await savePhotoRec(rec,fb.slice(0));touchP()}finally{URL.revokeObjectURL(L.u)}}catch(pe){}}
+   touch();await reload();render()}
+  catch(e){b.disabled=false;$("err").textContent=T("Could not save. Please try again.")}};
+}
+
+/* --- send my wishlist --- */
+var SHR=[["all","All plants"],["high","High priority only"],["himid","High and Medium"]];
+function shPick(rng){return wishes.filter(function(w){var p=priOf(w);return rng==="all"||(rng==="high"?p==="high":p!=="low")}).sort(wishSorter())}
+function shareForm(){var nm=esc(shName||"");
+ return "<h1>Share Wishlist</h1>"+
+ '<p class="muted">Makes a file you can send to a friend (LINE, Mail, AirDrop). Your friend opens it in EQ Database under Wishlist → Received. It never mixes with their own Wishlist.</p>'+
+ '<label>Your name (shown to your friend) *</label><input id="sh_name" value="'+nm+'" maxlength="60">'+
+ '<label>Plants to share</label>'+sel("sh_rng",SHR,"all")+
+ '<label class="ck"><input type="checkbox" id="sh_notes" checked> Include notes</label>'+
+ '<label class="ck"><input type="checkbox" id="sh_seen"> Include sightings (seller, price, URL)</label>'+
+ '<label class="ck"><input type="checkbox" id="sh_ph" checked> Include photos (up to 3 per plant, reduced)</label>'+
+ '<div class="muted" id="sh_cnt" style="margin-top:10px"></div>'+
+ (shPend?'<div class="banner">'+esc(T("The file is ready.")+" ("+(shPend.blob.size/1048576).toFixed(1)+" MB)")+'</div><button class="p" id="sh_save" style="width:100%">Send / Save file</button>':'<button class="p" id="sh_make" style="width:100%;margin-top:14px">Prepare file</button>')+
+ '<div class="row" style="margin-top:12px"><button id="shcancel">Cancel</button></div><div id="err" class="muted" style="color:var(--danger);margin-top:8px"></div>'}
+var shName="";
+function bindShareForm(){
+ var cnt=function(){$("sh_cnt").textContent=(lang==="ja"?shPick($("sh_rng").value).length+"件を共有します。":shPick($("sh_rng").value).length+" plants will be shared.")};
+ if(shPend){$("sh_rng").value=shPend.rng;$("sh_notes").checked=shPend.o.notes;$("sh_seen").checked=shPend.o.seen;$("sh_ph").checked=shPend.o.ph}
+ cnt();
+ ["sh_rng","sh_notes","sh_seen","sh_ph","sh_name"].forEach(function(i){$(i)[i==="sh_name"?"oninput":"onchange"]=function(){if(shPend){shPend=null;render()}else cnt()}});
+ $("shcancel").onclick=function(){wshare=false;shPend=null;render()};
+ if($("sh_make"))$("sh_make").onclick=async function(){
+  var name=$("sh_name").value.trim(),rng=$("sh_rng").value,o={notes:$("sh_notes").checked,seen:$("sh_seen").checked,ph:$("sh_ph").checked},L=shPick(rng);
+  if(!name){$("err").textContent=T("Please enter your name.");return}
+  if(!L.length){$("err").textContent=T("No plants to share.");return}
+  var b=this;b.disabled=true;
+  try{shName=name;await setMeta("shareName",name);var sid=await getMeta("shareId");if(!sid){sid=Date.now().toString(36)+Math.random().toString(36).slice(2,8);await setMeta("shareId",sid)}
+   var items=[],np=0;
+   for(var i=0;i<L.length;i++){var w=L[i],x={taxon:w.taxon,genus:w.genus||"",priority:priOf(w),fieldNumber:w.fieldNumber||"",fieldNumberStatus:w.fieldNumberStatus||"",locality:w.locality||"",localityStatus:w.localityStatus||"",source:w.source||""};
+    if(o.notes)x.notes=w.notes||"";if(o.seen)x.seen=seenOf(w);
+    if(o.ph){x.photos=[];var a=(pmap[w.id]||[]).slice(0,SHMAX);
+     for(var k=0;k<a.length;k++){b.textContent=(lang==="ja"?"写真を準備中 ":"Preparing photos ")+(i+1)+" / "+L.length+"…";
+      try{var Li=await loadImg(await getFullBlob(a[k]));try{var j=await toJpeg(Li.im,800,0.75);x.photos.push("data:image/jpeg;base64,"+b64(await readBuf(j.b)));np++}finally{URL.revokeObjectURL(Li.u)}}catch(pe){}}}
+    items.push(x)}
+   var data={app:"EuphorbiaQuest Field Database",kind:"wishlist-share",schemaVersion:2,appVersion:APP_VERSION,shareId:sid,sender:name,sentAt:new Date().toISOString(),items:items};
+   var fn="eq-wishlist-"+(name.replace(/[\\\/:*?"<>|\s]+/g,"_")||"share")+"-"+today()+".json";
+   shPend={blob:new Blob([JSON.stringify(data)],{type:"application/json"}),name:fn,rng:rng,o:o};render();
+  }catch(e){b.disabled=false;b.textContent=T("Prepare file");$("err").textContent=T("Could not prepare the file.")}};
+ if($("sh_save"))$("sh_save").onclick=async function(){var pd=shPend;if(!pd)return;
+  if(await saveFile(pd.name,pd.blob)){shPend=null;wshare=false;msg=T("The share file was sent or saved.");render()}};
+}
+function sharedJson(){return shared.map(function(r){return {id:r.id,sender:r.sender,sentAt:r.sentAt,received:r.received,items:r.items.map(function(x){var o=Object.assign({},x);o.photos=(x.photos||[]).map(function(b){return "data:image/jpeg;base64,"+b64(b)});return o})}})}
+function sharedFromJson(arr){return arr.map(function(r){return {id:str(r.id,100),sender:str(r.sender,60),sentAt:str(r.sentAt,40),received:+r.received||Date.now(),items:(Array.isArray(r.items)?r.items:[]).map(function(x){var o=Object.assign({},x),ph=[];(Array.isArray(x.photos)?x.photos:[]).forEach(function(u){try{ph.push(dataUrlToBuf(u))}catch(e){}});o.photos=ph;return o})}}).filter(function(r){return r.id})}
+
 var PRESET=["Euphorbia","Gasteria","Haworthia"];
 function allGenera(){var s={};PRESET.concat(genera).concat(plants.map(function(p){return p.genus})).concat(wishes.map(function(w){return w.genus})).forEach(function(g){if(g)s[g]=1});return Object.keys(s).sort(function(a,b){return a.localeCompare(b)})}
 function colGenera(){var s={};basePlants().forEach(function(p){if(p.genus)s[p.genus]=1});return Object.keys(s).sort(function(a,b){return a.localeCompare(b)})}
@@ -276,7 +409,7 @@ async function fixPrefixes(){var ch=fns.filter(function(f){return (f.prefix||"")
 function getNotes(){return req("notes","readonly",function(t){return t.objectStore("notes").getAll()})}
 function saveNote(n){return req("notes","readwrite",function(t){t.objectStore("notes").put(n)})}
 function delNote(id){return req("notes","readwrite",function(t){t.objectStore("notes").delete(id)})}
-function localDate(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function localDate(x){var d=x||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function plantById(id){return id?plants.filter(function(p){return p.id===id})[0]:null}
 function plantLabel(p){return p?p.no+" "+p.taxon:""}
 function noteHead(n){return n.title||String(n.body||"").split("\n")[0].slice(0,60)}
@@ -382,7 +515,7 @@ function dataUrlToBuf(u){var m=/^data:([^;,]+)?(;base64)?,(.*)$/.exec(u||"");if(
 var CHUNK=20*1048576,xp=null;
 function photoChunks(){var ch=[[]],sz=0;photos.forEach(function(r){var s=r.size||300000;if(ch[ch.length-1].length&&sz+s>CHUNK){ch.push([]);sz=0}ch[ch.length-1].push(r);sz+=s});return ch}
 function backupHead(withPhotos,seq,nparts,bid){
- var data={app:"EuphorbiaQuest Field Database",schemaVersion:2,appVersion:APP_VERSION,exportedAt:new Date().toISOString(),backupId:bid,photosIncluded:withPhotos,photoParts:nparts,part:1,seq:seq,settings:{prefix:mprefix},plants:plants,wishlist:wishes,genera:genera,fieldNumbers:fns,notes:notes};
+ var data={app:"EuphorbiaQuest Field Database",schemaVersion:2,appVersion:APP_VERSION,exportedAt:new Date().toISOString(),backupId:bid,photosIncluded:withPhotos,photoParts:nparts,part:1,seq:seq,settings:{prefix:mprefix},plants:plants,wishlist:wishes,genera:genera,fieldNumbers:fns,notes:notes,sharedLists:withPhotos?sharedJson():undefined};
  var h=JSON.stringify(data,null,1);return h.slice(0,h.lastIndexOf("}"))+',\n "photos": ['}
 function setPending(pd){pending=pd;var mb=(pd.blob.size/1048576).toFixed(1),multi=pd.of>1;
  msg=lang==="ja"?(multi?"ファイル "+pd.part+" / "+pd.of+" の":"バックアップファイルの")+"準備ができました("+mb+" MB)。"+(pd.skipped?pd.skipped+"枚の写真は読み込めず、含まれていません。":"")+"下のボタンを押して保存してください。"
@@ -428,7 +561,7 @@ function plantSorter(){var nm=function(a,b){return String(a.taxon||"").localeCom
 function sortSelect(){return sel("csort",SORTS,csort)}
 
 /* ---- read-only detail screens (a small stack, so Back returns to where you came from) ---- */
-function viewExists(v){return v.t==="p"?!!plantById(v.id):v.t==="f"?fns.some(function(x){return x.id===v.id}):v.t==="w"?wishes.some(function(x){return x.id===v.id}):notes.some(function(x){return x.id===v.id})}
+function viewExists(v){if(v.t==="r")return !!shById(v.id);if(v.t==="i")return !!shItem(v.id);return v.t==="p"?!!plantById(v.id):v.t==="f"?fns.some(function(x){return x.id===v.id}):v.t==="w"?wishes.some(function(x){return x.id===v.id}):notes.some(function(x){return x.id===v.id})}
 function pushView(t,id){var n=vstack.length;if(n>=2&&vstack[n-2].t===t&&vstack[n-2].id===id)vstack.pop();else if(!(n&&vstack[n-1].t===t&&vstack[n-1].id===id))vstack.push({t:t,id:id});render();window.scrollTo(0,0)}
 function popView(){vstack.pop();render()}
 function drow(k,v,extra,cls){return v?'<div class="dl"><div class="dk">'+k+'</div><div class="dv'+(cls?" "+cls:"")+'">'+esc(v)+(extra?'<span class="muted">  ·  </span><span class="muted">'+esc(extra)+"</span>":"")+"</div></div>":""}
@@ -492,26 +625,29 @@ function ask(text,ok,typed){return new Promise(function(res){
  $("ovo").onclick=function(){if(typed&&i.value.trim()!=="DELETE")return;done(true)}})}
 
 var formSnap="",listScroll=0,wasForm=false;
-function formOpen(){return !!(editing||wedit||fedit||nedit||vstack.length)}
-function cancelId(){return nedit?"ntcancel":fedit?"ncancel":wedit?"wcancel":editing?"cancel":vstack.length?"vback":null}
+function formOpen(){return !!(editing||wedit||fedit||nedit||wshare||vstack.length)}
+function cancelId(){return nedit?"ntcancel":fedit?"ncancel":wedit?"wcancel":wshare?"shcancel":editing?"cancel":vstack.length?"vback":null}
 function snap(){return Array.prototype.map.call($("main").querySelectorAll("input,textarea,select"),function(e){return e.type==="file"?"":e.value}).join("\u0001")}
 async function goBack(){var id=cancelId();if(!id)return;if(snap()!==formSnap&&!(await ask("Discard unsaved changes?","Discard")))return;var b=$(id);if(b)b.click()}
 window.addEventListener("popstate",function(){if($("pv").classList.contains("on")){try{history.pushState({eqForm:1},"")}catch(e){}closePv();return}if(!formOpen())return;try{history.pushState({eqForm:1},"")}catch(e){}goBack()});
 function render(){
  var ae=document.activeElement;if(ae&&ae!==document.body&&typeof ae.blur==="function")ae.blur();
  while(vstack.length&&!viewExists(vstack[vstack.length-1]))vstack.pop();
- var tv=vstack[vstack.length-1]||{};pview=tv.t==="p"?tv.id:null;fview=tv.t==="f"?tv.id:null;wview=tv.t==="w"?tv.id:null;nview=tv.t==="n"?tv.id:null;
+ var tv=vstack[vstack.length-1]||{};pview=tv.t==="p"?tv.id:null;fview=tv.t==="f"?tv.id:null;wview=tv.t==="w"?tv.id:null;nview=tv.t==="n"?tv.id:null;rview=tv.t==="r"?tv.id:null;iview=tv.t==="i"?tv.id:null;
  var sy=window.scrollY;
- $("nav").innerHTML=TABS.map(function(t){return '<button data-t="'+t[0]+'" class="'+(t[0]===tab&&!editing&&!wedit&&!fedit&&!nedit?"on":"")+'">'+t[1]+"</button>"}).join("");
+ $("nav").innerHTML=TABS.map(function(t){return '<button data-t="'+t[0]+'" class="'+(t[0]===tab&&!editing&&!wedit&&!fedit&&!nedit&&!wshare?"on":"")+'">'+t[1]+"</button>"}).join("");
  var m=$("main");
  if(nedit){m.innerHTML=noteForm();bindNoteForm()}
  else if(fedit){m.innerHTML=fnForm();bindFnForm()}
  else if(wedit){m.innerHTML=wishForm();bindWishForm()}
+ else if(wshare){m.innerHTML=shareForm();bindShareForm()}
  else if(editing){m.innerHTML=formView();bindForm()}
  else if(pview){m.innerHTML=plantView();bindPlantView()}
  else if(fview){m.innerHTML=fnDetail();bindFnDetail()}
  else if(wview){m.innerHTML=wishDetail();bindWishDetail()}
  else if(nview){m.innerHTML=noteDetail();bindNoteDetail()}
+ else if(rview){m.innerHTML=recvList();bindRecvList()}
+ else if(iview){m.innerHTML=recvItem();bindRecvItem()}
  else if(tab==="collection"){m.innerHTML=colView();bindCol()}
  else if(tab==="notes"){m.innerHTML=notesView();bindNotes()}
  else if(tab==="fields"){m.innerHTML=fieldsView();bindFields()}
@@ -528,7 +664,7 @@ function render(){
  try{var hs=history.state&&history.state.eqForm;if(fo&&!hs)history.pushState({eqForm:1},"");else if(!fo&&hs)history.back()}catch(e){}
  wasForm=fo;
 }
-$("nav").onclick=function(e){var b=e.target.closest("button");if(!b)return;discardNew();tab=b.getAttribute("data-t");editing=null;wedit=null;fedit=null;ftax=null;nedit=null;vstack=[];msg="";render();window.scrollTo(0,0)};
+$("nav").onclick=function(e){var b=e.target.closest("button");if(!b)return;discardNew();tab=b.getAttribute("data-t");editing=null;wedit=null;fedit=null;ftax=null;nedit=null;wshare=false;shPend=null;vstack=[];msg="";render();window.scrollTo(0,0)};
 
 function ago(){if(!lastBackup)return null;return Math.floor((Date.now()-lastBackup)/864e5)}
 function needBackup(){var un=dirty+pdirty,a=ago();return un>=25||(un>0&&a!==null&&a>=14)}
@@ -642,14 +778,16 @@ async function restoreFile(f){
   if(!d||d.app!=="EuphorbiaQuest Field Database")throw 0;
   if(d.schemaVersion>2){msg="This backup was made by a newer version and cannot be restored.";render();return}
   if(d.kind==="photos-part"){await restorePhotoPart(d);return}
+  if(d.kind==="wishlist-share"){await importShare(d);return}
   if(!Array.isArray(d.plants))throw 0;
   if(!(await ask(restoreMsg(d),"Restore")))return;
   var keepPhotos=d.photosIncluded===false,cv=convPhotos(keepPhotos?[]:d.photos),prs=cv[0],pfs=cv[1];
   var mx=d.plants.reduce(function(m,p){return Math.max(m,parseInt(String(p.no).replace(/\D/g,""),10)||0)},0);
-  await new Promise(function(res,rej){var t=DB.transaction(["plants","meta","wishlist","fieldnos","notes","photos","photofull"],"readwrite"),s=t.objectStore("plants"),ws=t.objectStore("wishlist"),fs=t.objectStore("fieldnos"),ns=t.objectStore("notes"),mt=t.objectStore("meta");
+  await new Promise(function(res,rej){var t=DB.transaction(["plants","meta","wishlist","fieldnos","notes","photos","photofull","shared"],"readwrite"),s=t.objectStore("plants"),ws=t.objectStore("wishlist"),fs=t.objectStore("fieldnos"),ns=t.objectStore("notes"),mt=t.objectStore("meta");
    s.clear();ws.clear();fs.clear();ns.clear();
    if(!keepPhotos){var pst=t.objectStore("photos"),pft=t.objectStore("photofull");pst.clear();pft.clear();prs.forEach(function(x){pst.put(x)});pfs.forEach(function(x){pft.put(x)});mt.put({k:"pdirty",v:0})}
    (Array.isArray(d.notes)?d.notes:[]).forEach(function(x){ns.put(x)});(Array.isArray(d.fieldNumbers)?d.fieldNumbers:[]).forEach(function(x){fs.put(x)});d.plants.forEach(function(p){s.put(p)});(Array.isArray(d.wishlist)?d.wishlist:[]).forEach(function(w){ws.put(w)});
+   if(Array.isArray(d.sharedLists)){var shs=t.objectStore("shared");shs.clear();sharedFromJson(d.sharedLists).forEach(function(x){shs.put(x)})}
    mt.put({k:"seq",v:Math.max(d.seq||0,mx)});mt.put({k:"genera",v:Array.isArray(d.genera)?d.genera:[]});mt.put({k:"dirty",v:0});
    if(d.settings&&/^[A-Za-z0-9]{1,8}$/.test(d.settings.prefix||""))mt.put({k:"prefix",v:d.settings.prefix});
    t.oncomplete=res;t.onerror=function(){rej(t.error)};t.onabort=function(){rej(t.error)}});
@@ -723,7 +861,7 @@ function bindSet(){
 }
 
 (async function(){
- try{DB=await openDB();await reload();lang=(await getMeta("lang"))||"en";csort=(await getMeta("csort"))||"name";wsort=(await getMeta("wsort"))||"pri";await migrateGenus();await fixPrefixes();await migrateFns();await migratePhotos();await cleanupOrphans();try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}}
+ try{DB=await openDB();await reload();lang=(await getMeta("lang"))||"en";csort=(await getMeta("csort"))||"name";wsort=(await getMeta("wsort"))||"pri";shName=(await getMeta("shareName"))||"";await migrateGenus();await fixPrefixes();await migrateFns();await migratePhotos();await cleanupOrphans();try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}}
  catch(e){$("main").innerHTML="<h1>Storage unavailable</h1><p class='muted'>This browser did not allow local storage. Try opening the page in Safari without Private Browsing.</p>";return}
  quiet=false;render();
  if(plants.length&&needBackup()){var un=dirty+pdirty;
