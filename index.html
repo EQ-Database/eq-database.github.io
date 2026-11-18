@@ -606,7 +606,14 @@ function plantView(){var p=plantById(pview),a=pmap[p.id]||[],st=stOf(p);
   '<button class="p" id="pvedit" style="width:100%;margin-top:14px">Edit</button>'+VBACK}
 var lblNo=(function(){try{return localStorage.getItem("eq-lbl-no")!=="0"}catch(e){return true}})();
 function lblClean(x){return String(x||"").replace(/[ \t ]+/g," ").trim()}
-function labelFront(p,withNo){return [lblClean(p.taxon),lblClean(p.fieldNumber),withNo?lblClean(p.no):""].filter(Boolean).join("\n")}
+function lblTaxon(tx){if(lblW(tx)<=20)return [tx];var t=tx.split(" "),fit=function(l){return l.every(function(x){return lblW(x)<=20})},ri=-1;
+ for(var i=2;i<t.length;i++){if(/^(var\.|subsp\.|ssp\.|f\.|forma|cv\.|nothosubsp\.|nothovar\.)$/i.test(t[i])||/^['"‘“]/.test(t[i])){ri=i;break}}
+ var at=function(arr,k){return [arr.slice(0,k).join(" "),arr.slice(k).join(" ")]},A=ri>0?at(t,ri):null,B=t.length>1?at(t,1):null;
+ if(A&&fit(A))return A;if(B&&fit(B))return B;
+ if(A&&/^[A-Z][a-z]+$/.test(t[0])){var ab=t.slice();ab[0]=t[0].charAt(0)+".";var C=at(ab,ri);if(fit(C))return C}
+ return A||B||[tx]}
+function labelFront(p,withNo){var tx=lblClean(p.taxon),last=[lblClean(p.fieldNumber),withNo?lblClean(p.no):""].filter(Boolean).join(" / ");
+ return (tx?lblTaxon(tx):[]).concat(last?[last]:[]).join("\n")}
 var LBL_CJK=/[⺀-鿿豈-﫿＀-￯]/;
 function lblW(t){var n=0;for(var i=0;i<t.length;i++)n+=LBL_CJK.test(t.charAt(i))?2:1;return n}
 function lblWrap(para,w){var segs=para.match(/[⺀-鿿豈-﫿＀-￯]|[^\s⺀-鿿豈-﫿＀-￯]+|\s+/g)||[],out=[],cur="",sp=false;
