@@ -676,7 +676,7 @@ function ask(text,ok,typed){return new Promise(function(res){
 var formSnap="",listScroll=0,wasForm=false;
 function formOpen(){return !!(editing||wedit||fedit||nedit||wshare||vstack.length)}
 function cancelId(){return nedit?"ntcancel":fedit?"ncancel":wedit?"wcancel":wshare?"shcancel":editing?"cancel":vstack.length?"vback":null}
-function snap(){return Array.prototype.map.call($("main").querySelectorAll("input,textarea,select"),function(e){return e.type==="file"?"":e.value}).join("\u0001")}
+function snap(){return Array.prototype.filter.call($("main").querySelectorAll("input,textarea,select"),function(e){return !e.closest(".lbl")}).map(function(e){return e.type==="file"?"":e.value}).join("\u0001")}
 async function goBack(){var id=cancelId();if(!id)return;if(snap()!==formSnap&&!(await ask("Discard unsaved changes?","Discard")))return;var b=$(id);if(b)b.click()}
 window.addEventListener("popstate",function(){if($("pv").classList.contains("on")){try{history.pushState({eqForm:1},"")}catch(e){}closePv();return}if(!formOpen())return;try{history.pushState({eqForm:1},"")}catch(e){}goBack()});
 function render(){
